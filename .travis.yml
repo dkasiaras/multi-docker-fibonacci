@@ -14,10 +14,22 @@ after_success:
   - docker build -t kasiarakos/multi-worker ./worker
   - docker build -t kasiarakos/multi-nginx ./nginx
   - docker build -t kasiarakos/multi-server ./server
-  
+
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
   - docker push kasiarakos/multi-client
   - docker push kasiarakos/multi-worker
   - docker push kasiarakos/multi-nginx
   - docker push kasiarakos/multi-server
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'us-east-1'
+  app: 'multi-docker'
+  env: 'MultiDocker-env'
+  bucket_name: 'elasticbeanstalk-us-east-2-259657362151'
+  bucket_path: 'docker-multi'
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
