@@ -1,0 +1,23 @@
+language: generic 
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t kasiarakos/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true kasiarakos/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t kasiarakos/multi-client ./client
+  - docker build -t kasiarakos/multi-worker ./worker
+  - docker build -t kasiarakos/multi-nginx ./nginx
+  - docker build -t kasiarakos/multi-server ./server
+  
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+  - docker push kasiarakos/multi-client
+  - docker push kasiarakos/multi-worker
+  - docker push kasiarakos/multi-nginx
+  - docker push kasiarakos/multi-server
