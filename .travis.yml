@@ -1,35 +1,9 @@
-language: generic 
 sudo: required
-services: 
+services:
   - docker
-
 before_install:
-  - docker build -t kasiarakos/react-test -f ./client/Dockerfile.dev ./client
-
-script:
-  - docker run -e CI=true kasiarakos/react-test npm test -- --coverage
-
-after_success:
-  - docker build -t kasiarakos/multi-client ./client
-  - docker build -t kasiarakos/multi-worker ./worker
-  - docker build -t kasiarakos/multi-nginx ./nginx
-  - docker build -t kasiarakos/multi-server ./server
-
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-
-  - docker push kasiarakos/multi-client
-  - docker push kasiarakos/multi-worker
-  - docker push kasiarakos/multi-nginx
-  - docker push kasiarakos/multi-server
-
-deploy:
-  provider: elasticbeanstalk
-  region: 'us-east-2'
-  app: 'multi-docker'
-  env: 'MultiDocker-env'
-  bucket_name: 'elasticbeanstalk-us-east-2-259657362151'
-  bucket_path: 'docker-multi'
-  on:
-    branch: master
-  access_key_id: $AWS_ACCESS_KEY
-  secret_access_key: $AWS_SECRET_KEY
+  - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components update kubectl
+  - gcloud auth activate-service-account --key-file service-account.json
